@@ -1,0 +1,11 @@
+slurm_logs/
+dataset/
+*/__pycache__/
+__pycache__/
+slurm_logs_2/
+*.sbatch
+cache_dir/
+ds_config/
+pretrained/
+results/
+*.txt

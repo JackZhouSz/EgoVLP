@@ -48,8 +48,8 @@ class ConfigParser:
 
         # set save_dir where trained model and log will be saved.
         save_dir = Path(self.config['trainer']['save_dir'])
-        # timestamp = datetime.now().strftime(r'%m%d_%H%M%S') if timestamp else ''
-        timestamp = datetime.now().strftime(r'%m%d_%H') if timestamp else ''
+        timestamp = datetime.now().strftime(r'%m%d_%H:%M:%S') if timestamp else ''
+        #timestamp = datetime.now().strftime(r'%m%d_%H') if timestamp else ''
 
         exper_name = self.config['name']
 

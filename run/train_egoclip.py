@@ -4,7 +4,7 @@ import argparse
 import collections
 import transformers
 from sacred import Experiment
-sys.path.append("/apdcephfs/share_1367250/qinghonglin/video_codebase/EgoVLP")
+sys.path.append("/private/home/ashutoshkr/code/long_video_embedding/EgoVLP")
 
 import torch
 import data_loader.data_loader as module_data
@@ -37,7 +37,7 @@ def run():
     torch.cuda.set_device(args.local_rank)
 
     # if args.world_size > 1:
-    if args.master_address != 9339:
+    if True:
         print("DistributedDataParallel")
         # DistributedDataParallel
         torch.distributed.init_process_group(backend='nccl',

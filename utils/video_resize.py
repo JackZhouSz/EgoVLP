@@ -25,10 +25,12 @@ def videos_resize(videoinfos):
     return
 
 if __name__ == "__main__":
+    video_index = int(sys.argv[1])
     file_list = []
     mp4_list = [item for item in os.listdir(folder_path) if item.endswith('.mp4')]
     for id, video in enumerate(mp4_list):
         file_list.append([id, video])
-
+    videos_resize(file_list[video_index])
+    exit()
     for file in file_list:
         videos_resize(file)

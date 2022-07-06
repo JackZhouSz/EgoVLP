@@ -255,7 +255,7 @@ class Multi_BaseTrainer_dist:
             #self.model = torch.nn.parallel.DistributedDataParallel(model)
             #self.model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.rank])
             # self.model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank])
-            self.model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], find_unused_parameters=True)
+            self.model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu]) #, find_unused_parameters=True
             #self.model = torch.nn.DataParallel(model, device_ids=device_ids)
 
         loss = loss.to(self.device)
