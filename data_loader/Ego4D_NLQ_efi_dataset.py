@@ -13,10 +13,13 @@ class NaturalLanguageQueriesEfi(TextVideoDataset):
 
         self.metadata = pd.read_csv(self.meta_dir)
 
-        done_vids = os.listdir('/checkpoint/afourast/data/ego4d/nlq/egoclip_features_train_val_2_per_sec/embeddings_768d')
-        done_vids = set([vid.replace('.pt','') for vid in done_vids])
+        # done_dir = '/checkpoint/afourast/data/ego4d/nlq/egoclip_features_train_val_2_per_sec/embeddings_768d'
+        done_dir = '/checkpoint/afourast/data/ego4d/nlq/egoclip_features_all_1.87/embeddings_768d'
 
-        self.metadata = self.metadata[~self.metadata.video_uids.isin(done_vids)]
+        if os.path.exists(done_dir):
+            done_vids = os.listdir(done_dir)
+            done_vids = set([vid.replace('.pt','') for vid in done_vids])
+            self.metadata = self.metadata[~self.metadata.video_uids.isin(done_vids)]
 
         # import ipdb; ipdb.set_trace(context=20)
 
@@ -35,8 +38,10 @@ class NaturalLanguageQueriesEfi(TextVideoDataset):
         sample = self.metadata.iloc [item]
         video_fp, rel_fp = self._get_video_path(sample)
 
-        feats_per_sec = 2
-        fps = 30 / (feats_per_sec * self.video_params['num_frames']) # e.g. 30 / (2*4) = 3.75 
+        # feats_per_sec = 2
+        # fps = 30 / (feats_per_sec * self.video_params['num_frames']) # e.g. 30 / (2*4) = 3.75 
+
+        fps = 4
         try:
             # imgs, idxs = self.video_reader(video_fp, sample[2]*30, sample[3]*30,
             #                                    (sample[3]-sample[2]) * fps * self.video_params['num_frames'])

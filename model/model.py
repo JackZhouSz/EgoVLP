@@ -44,7 +44,7 @@ class FrozenInTime(BaseModel):
             vit_init = video_params.get('vit_init', 'imagenet-21k')
             if arch_config == 'base_patch16_224':
                 # vit_model = timm.models.vision_transformer.vit_base_patch16_224(pretrained=pretrained)
-                vit_model = torch.load("./pretrained/jx_vit_base_p16_224-80ecf9dd.pth", map_location="cpu")
+                vit_model = torch.load("./egovlp.pth", map_location="cpu")
                 model = SpaceTimeTransformer(num_frames=num_frames,
                                             time_init=time_init,
                                             attention_style=attention_style)
@@ -140,6 +140,11 @@ class FrozenInTime(BaseModel):
         video_embeddings = self.video_model(video_data)
         video_embeddings = self.vid_proj(video_embeddings)
         return video_embeddings
+
+    def compute_video_embeddings_and_projection(self, video_data):
+        video_embeddings = self.video_model(video_data)
+        video_projection = self.vid_proj(video_embeddings)
+        return video_embeddings, video_projection
 
     def _inflate_positional_embeds(self, new_state_dict):
         # allow loading of timesformer with fewer num_frames

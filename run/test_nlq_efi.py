@@ -123,7 +123,7 @@ if __name__ == '__main__':
                       help='source data from video or text.')
     args.add_argument('--token', default=False, type=bool,
                       help='whether use token features to represent sentence.')
-    args.add_argument('--save_feats', default='/checkpoint/afourast/data/ego4d/nlq/egoclip_features_train_val_2_per_sec',
+    args.add_argument('--save_feats', default='/checkpoint/afourast/data/ego4d/nlq/egoclip_features_all_1.87',
                       help='path to store text & video feats, this is for saving embeddings if you want to do offline retrieval.')
     args.add_argument('--split', default='train', choices=['train', 'val', 'test'],
                       help='split to evaluate on.')

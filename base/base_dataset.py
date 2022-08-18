@@ -192,6 +192,10 @@ def sample_frames_clips(start, end, vlen, acc_samples):
     start = max(0, start)
     end = min(vlen, end)
 
+    if start >= end:
+        print('******* FOUND START > END, RETURNING LAST FRAMES!!!!!')
+        start = end - acc_samples
+
     intervals = np.linspace(start=start, stop=end, num=int(acc_samples) + 1).astype(int)
     ranges = []
     for idx, interv in enumerate(intervals[:-1]):
@@ -374,6 +378,18 @@ def read_frames_decord(video_path, num_frames, sample='rand', fix_start=None):
     frames = frames.permute(0, 3, 1, 2)
     return frames, frame_idxs
 
+def read_frames_decord_uniform(video_path, fps, sample='uniform', fix_start=True):
+    video_reader = decord.VideoReader(video_path, num_threads=1)
+    vlen = len(video_reader)
+    num_frames = int( vlen // fps )
+    frame_idxs = sample_frames(num_frames, vlen, sample=sample, fix_start=fix_start)
+    video_reader.skip_frames(1)
+    frames = video_reader.get_batch(frame_idxs)
+
+    frames = frames.float() / 255
+    frames = frames.permute(0, 3, 1, 2)
+    return frames, frame_idxs
+
 def read_frames_decord_start_end(video_path, start, end, num_frames):
     video_reader = decord.VideoReader(video_path, num_threads=1)
     vlen = len(video_reader)
@@ -400,5 +416,6 @@ video_reader = {
     'cv2_charades': read_frames_cv2_charades,
     'cv2_egoclip': read_frames_cv2_egoclip,
     'decord': read_frames_decord,
+    'decord_uniform': read_frames_decord_uniform,
     'decord_start_end': read_frames_decord_start_end,
 }
