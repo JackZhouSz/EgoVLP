@@ -8,10 +8,14 @@ from data_loader.EgoClip_EgoMCQ_dataset import EgoClip_EgoMCQ
 from data_loader.EpicKitchens_MIR_dataset import MultiInstanceRetrieval
 from data_loader.CharadesEgo_dataset import CharadesEgo
 from data_loader.Ego4D_NLQ_dataset import NaturalLanguageQueries
+from data_loader.Ego4D_NLQ_efi_dataset import NaturalLanguageQueriesEfi
 from data_loader.Ego4D_MQ_dataset import MomentQueries
+from data_loader.Ego4D_EgoExoFeaturize_dataset import EgoExoFeaturize
 from data_loader.Ego4D_OSCC_dataset import ObjectStateChangeClassification
 from data_loader.Ego4D_PNR_dataset import PNRTemporalLocalization
 from data_loader.transforms import init_transform_dict, init_video_transform_dict
+from data_loader.Fremont_Featurize_dataset import FremontFeaturize
+from data_loader.Coin_Featurize_dataset import CoinFeaturize
 
 def dataset_loader(dataset_name,
                    text_params,
@@ -62,6 +66,14 @@ def dataset_loader(dataset_name,
         dataset = NaturalLanguageQueries(**kwargs)
     elif dataset_name == "Ego4D_MQ":
         dataset = MomentQueries(**kwargs)
+    elif dataset_name == "Ego4D_EgoExo":
+        dataset = EgoExoFeaturize(**kwargs)
+    elif dataset_name == "Ego4D_NLQ_efi":
+        dataset = NaturalLanguageQueriesEfi(**kwargs)
+    elif dataset_name == "fremont":
+        dataset = FremontFeaturize(**kwargs)
+    elif dataset_name == "coin":
+        dataset = CoinFeaturize(**kwargs)
     else:
         raise NotImplementedError(f"Dataset: {dataset_name} not found.")
 
