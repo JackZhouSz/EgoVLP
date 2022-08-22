@@ -25,10 +25,11 @@
         "args": {
             "dataset_name": "Ego4D_NLQ_efi",
             "data_dir": "dataset/ego4d_256",
-            "meta_dir": "/checkpoint/emavroudi/DATASET/data/ego4d/vslnet_data/nlq_train_val_video_uids.csv",
+            "meta_dir": "/checkpoint/afourast/data/ego4d/ego4d_all_uids.csv",
+            "save_feats_dir": "/checkpoint/afourast/data/ego4d/nlq/egoclip_features_all_1.87_slurm",
             "shuffle": true,
-            "num_workers": 16,
-            "batch_size": 32,
+            "num_workers": 1,
+            "batch_size": 1,
             "split": "test",
             "subsample": "video",
             "text_params": {

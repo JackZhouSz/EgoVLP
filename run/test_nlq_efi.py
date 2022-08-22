@@ -12,10 +12,10 @@ import data_loader.data_loader as module_data
 from utils import state_dict_data_parallel_fix
 from parse_config import ConfigParser
 
-ex = Experiment('test')
+# ex = Experiment('test')
 
-@ex.main
-def run():
+# @ex.main
+def main(args ,config):
     # setup data_loader instances
     config._config['data_loader']['type'] = 'TextVideoDataLoader'
     config._config['data_loader']['args']['split'] = args.split
@@ -23,6 +23,17 @@ def run():
     config._config['data_loader']['args']['shuffle'] = False
     config._config['data_loader']['args']['batch_size'] = args.batch_size
     config._config['data_loader']['args']['sliding_window_stride'] = args.sliding_window_stride
+
+    # world_size = int(os.environ["SLURM_NPROCS"])
+    # rank = int(os.environ["SLURM_PROCID"])
+    config._config['data_loader']['args']['n_jobs'] = args.n_jobs
+    config._config['data_loader']['args']['job_id'] = args.job_id
+    # if "SLURM_ARRAY_TASK_ID" in os.environ:
+    #     rank = int(os.environ["SLURM_ARRAY_TASK_ID"])
+    #     config._config['data_loader']['args']['job_id'] = rank
+
+
+    save_feats = config._config['data_loader']['args']['save_feats_dir']
 
     data_loader = config.initialize('data_loader', module_data)
 
@@ -47,8 +58,8 @@ def run():
 
     print(len(data_loader))
 
-    if not os.path.exists(args.save_feats):
-        os.mkdir(args.save_feats)
+    if not os.path.exists(save_feats):
+        os.mkdir(save_feats)
 
     num_frame = config.config['data_loader']['args']['video_params']['num_frames']
     emb_dim = 768
@@ -86,20 +97,13 @@ def run():
                 outs_emb[start:end,] = video_embd
                 outs_proj[start:end,] = video_proj
 
-            # import ipdb; ipdb.set_trace(context=20)
-
-            # torch.save(outs, os.path.join(args.save_feats, data['meta']['clip_uid'][0]+'.pt'))
-
-            # import json 
-            # shapes = json.load(open('/checkpoint/emavroudi/DATASET/data/ego4d/vslnet_data/features/nlq_official_v1/official/feature_shapes.json'))
-
             video_uid = data['meta']['video_uid'][0]
 
-            os.makedirs( os.path.join( args.save_feats, 'embeddings_768d' ), exist_ok=True )
-            os.makedirs( os.path.join( args.save_feats, 'projections_256d' ), exist_ok=True )
+            os.makedirs( os.path.join(save_feats, 'embeddings_768d' ), exist_ok=True )
+            os.makedirs( os.path.join(save_feats, 'projections_256d' ), exist_ok=True )
 
-            torch.save(outs_emb, args.save_feats+f'/embeddings_768d/{video_uid}.pt')
-            torch.save(outs_proj, args.save_feats+f'/projections_256d/{video_uid}.pt')
+            torch.save(outs_emb, save_feats+f'/embeddings_768d/{video_uid}.pt')
+            torch.save(outs_proj, save_feats+f'/projections_256d/{video_uid}.pt')
 
             # video_embd  = video_embd.cpu().numpy()
             # video_proj  = video_proj.cpu().numpy()
@@ -107,7 +111,7 @@ def run():
             # all_video_proj.append(video_proj)
             # all_video_idx.append(data['meta']['idx'])
 
-if __name__ == '__main__':
+def parse_args():
     args = argparse.ArgumentParser(description='PyTorch Template')
 
     args.add_argument('-r', '--resume',
@@ -123,19 +127,27 @@ if __name__ == '__main__':
                       help='source data from video or text.')
     args.add_argument('--token', default=False, type=bool,
                       help='whether use token features to represent sentence.')
-    args.add_argument('--save_feats', default='/checkpoint/afourast/data/ego4d/nlq/egoclip_features_all_1.87',
-                      help='path to store text & video feats, this is for saving embeddings if you want to do offline retrieval.')
     args.add_argument('--split', default='train', choices=['train', 'val', 'test'],
                       help='split to evaluate on.')
     args.add_argument('--batch_size', default=1, type=int,
                       help='size of batch')
     args.add_argument('-gpu', '--gpu', default=0, type=str,
                       help='indices of GPUs to enable (default: all)')
-    config = ConfigParser(args, test=True, eval_mode='efi_nlq')
+    args.add_argument('--n_jobs', default=1, type=int,)
+    args.add_argument('--job_id', default=0, type=int,)
     # hack to get sliding into config
+    config = ConfigParser(args, test=True, eval_mode='efi_nlq')
+
     args = args.parse_args()
+
+    args.checkpoint_dir = config._config['data_loader']['args']['save_feats_dir']
+
     config._config['sliding_window_stride'] = args.sliding_window_stride
-    ex.add_config(config.config)
+    return args, config
+
+if __name__ == '__main__':
+    args, config = parse_args()
+    # ex.add_config(config.config)
 
     os.environ["CUDA_VISIBLE_DEVICES"] =  ""+str(args.gpu)
-    ex.run()
+    main(args, config)

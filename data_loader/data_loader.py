@@ -28,8 +28,10 @@ def dataset_loader(dataset_name,
                    subsample=1,
                    sliding_window_stride=-1,
                    reader='decord',
-                   neg_param=None):
-    kwargs = dict(
+                   neg_param=None,
+                   *args, **kwargs,
+                   ):
+    kwargs.update( dict(
         dataset_name=dataset_name,
         text_params=text_params,
         video_params=video_params,
@@ -42,7 +44,7 @@ def dataset_loader(dataset_name,
         sliding_window_stride=sliding_window_stride,
         reader=reader,
         neg_param=neg_param,
-    )
+    ))
 
     # TODO: change to...
     #  dataset = globals()[dataset_name]
@@ -97,7 +99,8 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
                  neg_param=None,
                  batch_size=1,
                  num_workers=1,
-                 shuffle=True):
+                 shuffle=True,
+                 *args, **kwargs):
         if tsfm_params is None:
             tsfm_params = {}
         if video_params['num_frames'] > 1:
@@ -109,7 +112,7 @@ class TextVideoDataLoader(BaseDataLoaderExplicitSplit):
             tsfm_split = split
         tsfm = tsfm_dict[tsfm_split]
         dataset = dataset_loader(dataset_name, text_params, video_params, data_dir, meta_dir, split, tsfm, cut,
-                                 subsample, sliding_window_stride, reader, neg_param)
+                                 subsample, sliding_window_stride, reader, neg_param, *args, **kwargs)
 
         super().__init__(dataset, batch_size, shuffle, num_workers)
         self.dataset_name = dataset_name

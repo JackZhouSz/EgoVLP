@@ -1,5 +1,6 @@
 import os
 import pdb
+from re import I
 import sys
 import json
 import pandas as pd
@@ -8,20 +9,43 @@ sys.path.append('/apdcephfs/private_qinghonglin/video_codebase/EgoVLP/')
 from base.base_dataset import TextVideoDataset
 from data_loader.transforms import init_transform_dict, init_video_transform_dict
 
+def get_job_split(array, n_jobs, job_id):
+    fr = int((job_id / float(n_jobs)) * len(array))
+    to = int((job_id + 1) / float(n_jobs) * len(array))
+    print(f'job_id = {job_id}. Doing indices from {fr} to {to} out of {len(array)}')
+    if isinstance(array, pd.DataFrame):
+        array = array.iloc[fr:to]
+    else:
+        array = array[fr:to]
+    return array
+
 class NaturalLanguageQueriesEfi(TextVideoDataset):
+
+    
+    def __init__(self, *args, **kwargs):
+        self.n_jobs = kwargs['n_jobs']
+        self.job_id = kwargs['job_id']
+        self.save_feats_dir = kwargs['save_feats_dir']
+        super().__init__(*args, **kwargs)
+
     def _load_metadata(self):
 
         self.metadata = pd.read_csv(self.meta_dir)
+        manifest = pd.read_csv('/datasets01/ego4d_track2/v1/full_scale/manifest.csv')
 
-        # done_dir = '/checkpoint/afourast/data/ego4d/nlq/egoclip_features_train_val_2_per_sec/embeddings_768d'
-        done_dir = '/checkpoint/afourast/data/ego4d/nlq/egoclip_features_all_1.87/embeddings_768d'
+        vid2len = { vid: (dur*31) for vid, dur in manifest[['video_uid','duration_sec']].values }
 
-        if os.path.exists(done_dir):
-            done_vids = os.listdir(done_dir)
+        # --- keep only the short ones (~85%) that fit whole in memory 
+        keep_thresh = 70000 # 70 * 224 * 224 * 3 * 4 ~= 42 GB
+        keep = [vid for vid,ln in vid2len.items() if ln < keep_thresh ]
+        self.metadata = self.metadata[self.metadata.video_uids.isin(keep)]
+
+        if os.path.exists(self.save_feats_dir):
+            done_vids = os.listdir(self.save_feats_dir)
             done_vids = set([vid.replace('.pt','') for vid in done_vids])
             self.metadata = self.metadata[~self.metadata.video_uids.isin(done_vids)]
 
-        # import ipdb; ipdb.set_trace(context=20)
+        self.metadata = get_job_split(self.metadata, self.n_jobs, self.job_id)
 
         self.transforms = init_video_transform_dict()['test']
 
@@ -48,6 +72,7 @@ class NaturalLanguageQueriesEfi(TextVideoDataset):
             imgs, idxs = self.video_reader(video_fp, fps = fps )
         except:
             print(f"Warning: missing video file {video_fp}.")
+
 
         if self.transforms is not None:
             imgs = imgs.transpose(0, 1)  # [T, C, H, W] ---> [C, T, H, W]

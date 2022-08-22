@@ -30,6 +30,7 @@ class TextVideoDataset(Dataset):
                  sliding_window_stride=-1,
                  reader='decord',
                  neg_param=None,
+                 *args, **kwargs,
                  ):
         self.dataset_name = dataset_name
         self.text_params = text_params
